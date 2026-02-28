@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
 import fullReload from 'vite-plugin-full-reload';
+import autoprefixer from 'autoprefixer';
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -51,7 +52,7 @@ export default defineConfig(({ command, mode }) => {
       },
       postcss: {
         plugins: [
-          (await import('autoprefixer')).default(),
+          autoprefixer(),
         ],
       },
     },
