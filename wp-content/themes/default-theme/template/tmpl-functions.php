@@ -9,7 +9,10 @@ function my_acf_init(): void {
 add_action( 'acf/init', 'my_acf_init' );
 
 function maps_api_init(): void {
-    $api = get_field( 'google_maps_api', 'option' ) ?: '';
+    $api = get_field( 'google_maps_api', 'option' );
+    if ( ! $api ) {
+        return;
+    }
     wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . esc_attr( $api ) . '&libraries=places', array(), null, true );
 }
 add_action( 'wp_enqueue_scripts', 'maps_api_init' );
@@ -40,10 +43,7 @@ function theme_enqueue_assets(): void {
         $dev_url = 'http://localhost:5173';
 
         wp_enqueue_script( 'vite-client', "{$dev_url}/@vite/client", array(), null, false );
-        wp_scripts()->add_data( 'vite-client', 'type', 'module' );
-
         wp_enqueue_script( 'theme-main', "{$dev_url}/{$theme_path}/assets/src/js/main.js", array(), null, true );
-        wp_scripts()->add_data( 'theme-main', 'type', 'module' );
     } else {
         $manifest = theme_get_vite_manifest();
         $js_entry = "{$theme_path}/assets/src/js/main.js";
@@ -71,6 +71,14 @@ function theme_enqueue_assets(): void {
     }
 }
 add_action( 'wp_enqueue_scripts', 'theme_enqueue_assets' );
+
+// Add type="module" to Vite script tags
+add_filter( 'script_loader_tag', function( string $tag, string $handle ): string {
+    if ( in_array( $handle, array( 'vite-client', 'theme-main' ), true ) ) {
+        $tag = str_replace( '<script ', '<script type="module" ', $tag );
+    }
+    return $tag;
+}, 10, 2 );
 
 
 /*******************************************/

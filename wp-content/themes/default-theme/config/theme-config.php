@@ -95,14 +95,20 @@ function theme_prev_posts_link_attributes(): string {
 /*  CONTENT SECURITY POLICY                */
 /*******************************************/
 function theme_send_csp_headers(): void {
+    // Disable CSP in development (Vite dev server uses different origins)
+    if ( defined( 'VITE_DEV' ) && VITE_DEV ) {
+        return;
+    }
+
     $directives = apply_filters( 'theme_csp_directives', array(
         'default-src' => "'self'",
-        'script-src'  => "'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+        'script-src'  => "'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com",
         'style-src'   => "'self' 'unsafe-inline' https://fonts.googleapis.com",
         'font-src'    => "'self' https://fonts.gstatic.com",
         'img-src'     => "'self' data: https:",
-        'connect-src' => "'self' https://www.google-analytics.com",
+        'connect-src' => "'self' https://www.google-analytics.com https://maps.googleapis.com",
         'frame-src'   => "'self' https://www.google.com",
+        'worker-src'  => "'self' blob:",
         'object-src'  => "'none'",
         'base-uri'    => "'self'",
     ) );

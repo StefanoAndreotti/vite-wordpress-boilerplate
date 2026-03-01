@@ -20,13 +20,12 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         input: {
           main: `${THEME_PATH}/assets/src/js/main.js`,
-          style: `${THEME_PATH}/assets/src/sass/style.scss`,
         },
         output: {
           entryFileNames: 'js/[name]-[hash].js',
           chunkFileNames: 'js/[name]-[hash].js',
-          assetFileNames: ({ name }) =>
-            name?.endsWith('.css')
+          assetFileNames: ({ names }) =>
+            names[0]?.endsWith('.css')
               ? 'css/[name]-[hash][extname]'
               : 'img/[name]-[hash][extname]',
         },
@@ -36,14 +35,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       host: 'localhost',
       port: 5173,
-      proxy: {
-        // Proxy everything to WordPress except Vite's own internal paths
-        '^(?!/@vite|/@fs|/node_modules)': {
-          target: `http://${env.LOCAL_DOMAIN || 'localhost'}`,
-          changeOrigin: true,
-          secure: false,
-        },
-      },
+      cors: true,
     },
 
     css: {

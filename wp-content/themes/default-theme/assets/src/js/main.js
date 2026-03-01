@@ -1,11 +1,16 @@
 //
+// Load styles
+//
+
+import '../sass/style.scss';
+
+//
 // Load jQuery plugins
 //
 
 import '@popperjs/core';
 import 'bootstrap';
-import 'bootstrap-italia/dist/js/bootstrap-italia.bundle.min.js'; 
-import 'arrive';
+// import 'arrive';
 
 //
 //  Load custom js
