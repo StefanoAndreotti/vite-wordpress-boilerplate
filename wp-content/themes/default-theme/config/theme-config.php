@@ -22,7 +22,13 @@ add_action( 'init', 'myprefix_unregister_tags' );
 /*******************************************/
 /*  ACF OPTIONS PAGES                      */
 /*******************************************/
-if ( function_exists( 'acf_add_options_page' ) ) {
+// Hook su 'acf/init' (non top-level): è il momento in cui ACF garantisce che
+// le sue funzioni siano disponibili, indipendentemente dall'ordine di
+// caricamento di plugin/tema.
+function theme_register_acf_options_pages(): void {
+    if ( ! function_exists( 'acf_add_options_page' ) ) {
+        return;
+    }
 
     acf_add_options_page( array(
         'page_title' => 'Campi globali',
@@ -37,8 +43,28 @@ if ( function_exists( 'acf_add_options_page' ) ) {
         'menu_title'  => 'Google Maps - API',
         'parent_slug' => 'theme-general-settings',
     ) );
-
 }
+add_action( 'acf/init', 'theme_register_acf_options_pages' );
+
+
+/*******************************************/
+/*  ADMIN — SCHERMATA MODIFICA TERMINE     */
+/*  #edittag è max-width:800px di default, */
+/*  scomodo se dentro ci sono campi ACF a  */
+/*  builder di blocchi                     */
+/*******************************************/
+function theme_admin_edit_tag_full_width(): void {
+    $screen = get_current_screen();
+    if ( ! $screen || 'term' !== $screen->base ) {
+        return;
+    }
+    ?>
+    <style>
+        #edittag { max-width: 100%; }
+    </style>
+    <?php
+}
+add_action( 'admin_head', 'theme_admin_edit_tag_full_width' );
 
 
 /*******************************************/

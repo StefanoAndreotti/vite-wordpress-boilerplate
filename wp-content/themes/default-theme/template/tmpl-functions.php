@@ -84,17 +84,22 @@ add_filter( 'script_loader_tag', function( string $tag, string $handle ): string
 /*******************************************/
 /*  RENDER HELPERS                         */
 /*******************************************/
+// Include avvolto in una closure: isola le variabili locali (niente leak di
+// $args nello scope del template incluso) e basename() previene path
+// traversal se il nome arrivasse mai da un valore non fidato.
 function render_theme_component( string $component_name, array $args = array() ): void {
-    include get_template_directory() . '/template/components/' . $component_name . '.php';
+    ( static function ( string $name, array $args ): void {
+        include get_template_directory() . '/template/components/' . basename( $name ) . '.php';
+    } )( $component_name, $args );
 }
 
 function render_theme_block( string $block_name, array $args = array() ): void {
-    if ( isset( $args['id_block'] ) ) {
-        $fields = is_string( $args['id_block'] )
-            ? get_field( $args['id_block'] )
-            : $args['id_block'];
-    }
-    include get_template_directory() . '/template/blocks/' . $block_name . '.php';
+    ( static function ( string $name, array $args ): void {
+        $fields = isset( $args['id_block'] )
+            ? ( is_string( $args['id_block'] ) ? get_field( $args['id_block'] ) : $args['id_block'] )
+            : array();
+        include get_template_directory() . '/template/blocks/' . basename( $name ) . '.php';
+    } )( $block_name, $args );
 }
 
 
@@ -115,4 +120,104 @@ function get_svg( string $name, string $path_folder = '' ): string {
 
 function print_pretty_array( mixed $variable ): void {
     echo '<pre>' . esc_html( print_r( $variable, true ) ) . '</pre>';
+}
+
+// Un campo Link ACF vuoto (o l'intera riga di un repeater non compilata)
+// torna `false` invece di un array: normalizza per evitare warning/fatal
+// "array offset on bool/null" quando si accede a $link['url'] ecc.
+function get_acf_link( mixed $field, string $key = 'link' ): array {
+    $empty = array( 'url' => '', 'title' => '', 'target' => '' );
+
+    if ( ! is_array( $field ) ) {
+        return $empty;
+    }
+
+    $link = $field[ $key ] ?? $field;
+    return is_array( $link ) ? array_merge( $empty, $link ) : $empty;
+}
+
+// Costruisce la traccia breadcrumb (Home > ... > pagina corrente) per il
+// contesto corrente: termine di tassonomia (con i suoi antenati), pagina
+// (con le sue pagine antenate), singolo di un CPT (con l'archivio, se
+// presente), archivio, ricerca, 404. Ogni voce è ['title' => ..., 'url' =>
+// ...]; l'ultima voce ha url vuoto (pagina corrente).
+function theme_get_breadcrumb_items(): array {
+    $items = array(
+        array(
+            'title' => __( 'Home', 'default-theme' ),
+            'url'   => home_url( '/' ),
+        ),
+    );
+
+    if ( is_front_page() ) {
+        return array( $items[0] );
+    }
+
+    if ( is_category() || is_tag() || is_tax() ) {
+        $term = get_queried_object();
+        if ( $term instanceof WP_Term ) {
+            $ancestor_ids = array_reverse( get_ancestors( $term->term_id, $term->taxonomy, 'taxonomy' ) );
+            foreach ( $ancestor_ids as $ancestor_id ) {
+                $ancestor = get_term( $ancestor_id, $term->taxonomy );
+                if ( $ancestor instanceof WP_Term ) {
+                    $link    = get_term_link( $ancestor );
+                    $items[] = array(
+                        'title' => $ancestor->name,
+                        'url'   => is_wp_error( $link ) ? '' : $link,
+                    );
+                }
+            }
+            $items[] = array(
+                'title' => $term->name,
+                'url'   => '',
+            );
+        }
+    } elseif ( is_singular() ) {
+        $post = get_queried_object();
+        if ( $post instanceof WP_Post ) {
+            if ( 'page' === $post->post_type ) {
+                $ancestor_ids = array_reverse( get_post_ancestors( $post ) );
+                foreach ( $ancestor_ids as $ancestor_id ) {
+                    $items[] = array(
+                        'title' => get_the_title( $ancestor_id ),
+                        'url'   => get_permalink( $ancestor_id ),
+                    );
+                }
+            } else {
+                $post_type_obj = get_post_type_object( $post->post_type );
+                if ( $post_type_obj && $post_type_obj->has_archive ) {
+                    $archive_link = get_post_type_archive_link( $post->post_type );
+                    if ( $archive_link ) {
+                        $items[] = array(
+                            'title' => $post_type_obj->labels->name,
+                            'url'   => $archive_link,
+                        );
+                    }
+                }
+            }
+
+            $items[] = array(
+                'title' => get_the_title( $post ),
+                'url'   => '',
+            );
+        }
+    } elseif ( is_post_type_archive() ) {
+        $items[] = array(
+            'title' => post_type_archive_title( '', false ),
+            'url'   => '',
+        );
+    } elseif ( is_search() ) {
+        $items[] = array(
+            /* translators: %s: search query */
+            'title' => sprintf( __( 'Risultati per: %s', 'default-theme' ), get_search_query() ),
+            'url'   => '',
+        );
+    } elseif ( is_404() ) {
+        $items[] = array(
+            'title' => __( 'Pagina non trovata', 'default-theme' ),
+            'url'   => '',
+        );
+    }
+
+    return $items;
 }

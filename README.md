@@ -80,6 +80,8 @@ bun run dev
 
 Vite si avvia su `http://localhost:5173` e fa da proxy verso il tuo WordPress locale. Apri il sito tramite il dominio locale configurato in `.env` — non direttamente dalla porta 5173.
 
+> **HTTPS automatico (Laravel Valet):** se in `~/.config/valet/Certificates/` esiste un certificato per il tuo `LOCAL_DOMAIN` (es. `miosito.local.crt`/`.key`), il dev server si avvia in HTTPS su quel dominio invece che su `localhost`. Utile per testare cookie cross-site, consent mode GTM, form ecc. in un contesto realistico. Senza certificato, fa fallback su `http://localhost` come prima.
+
 ---
 
 ## Build per produzione
