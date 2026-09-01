@@ -28,8 +28,9 @@ Modifica `.env` con i tuoi valori:
 | `LOCAL_DOMAIN` | Dominio locale WordPress (es. `miosito.local`) |
 | `THEME_NAME` | Nome della cartella del tema (default: `default-theme`) |
 | `ACF_PRO_KEY` | Licenza ACF PRO |
+| `GRAVITYFORMS_KEY` | Licenza Gravity Forms |
 
-### 3. Configura ACF PRO
+### 3. Configura ACF PRO e Gravity Forms
 
 Crea il file `auth.json` nella root (è escluso dal repository):
 
@@ -39,12 +40,16 @@ Crea il file `auth.json` nella root (è escluso dal repository):
     "connect.advancedcustomfields.com": {
       "username": "LA_TUA_LICENZA_ACF_PRO",
       "password": "https://tuosito.com"
+    },
+    "composer.gravity.io": {
+      "username": "LA_TUA_LICENZA_GRAVITY_FORMS",
+      "password": "https://tuosito.com"
     }
   }
 }
 ```
 
-> La `username` è la chiave di licenza ACF PRO, la `password` è l'URL del sito registrato.
+> La `username` è la chiave di licenza (ACF PRO o Gravity Forms), la `password` è l'URL del sito registrato.
 
 ### 4. Installa le dipendenze PHP
 
@@ -199,9 +204,10 @@ Si attiva su push e pull request verso `main` e `develop`.
 | ACF PRO | Custom fields e page builder |
 | Yoast SEO | SEO |
 | Wordfence | Sicurezza |
-| Contact Form 7 | Form di contatto |
+| Gravity Forms | Form di contatto |
 | Redirection | Gestione redirect 301 |
 | SVG Support | Caricamento SVG in media library |
 | Google Tag Manager | GTM integration |
 | Classic Editor | Editor classico WordPress |
 | Duplicate Page | Duplicazione pagine |
+| Login reCAPTCHA | Protezione login WordPress |

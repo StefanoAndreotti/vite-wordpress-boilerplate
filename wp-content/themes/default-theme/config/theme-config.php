@@ -67,13 +67,13 @@ add_action( 'wp_before_admin_bar_render', 'theme_admin_bar_remove', 0 );
 
 
 /*******************************************/
-/*  HIDE CF7 MENU FROM NON-ADMINS          */
+/*  HIDE GRAVITY FORMS MENU FROM NON-ADMINS */
 /*******************************************/
 if ( ! current_user_can( 'administrator' ) ) {
-    function theme_remove_cf7_menu(): void {
-        remove_menu_page( 'wpcf7' );
+    function theme_remove_gravityforms_menu(): void {
+        remove_menu_page( 'gf_edit_forms' );
     }
-    add_action( 'admin_menu', 'theme_remove_cf7_menu' );
+    add_action( 'admin_menu', 'theme_remove_gravityforms_menu' );
 }
 
 
