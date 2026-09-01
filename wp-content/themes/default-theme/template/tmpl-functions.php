@@ -40,7 +40,13 @@ function theme_enqueue_assets(): void {
     $theme_path = "wp-content/themes/{$theme_dir}";
 
     if ( $is_dev ) {
-        $dev_url = 'http://localhost:5173';
+        // Se il dev server Vite è servito in HTTPS sul dominio locale (vedi
+        // vite.config.js: certificato Valet per LOCAL_DOMAIN), allinea qui
+        // l'host/protocollo usato per caricare gli script — altrimenti il
+        // browser blocca il mixed content (pagina https, script http).
+        $protocol = is_ssl() ? 'https' : 'http';
+        $host     = is_ssl() ? ( defined( 'LOCAL_DOMAIN' ) ? LOCAL_DOMAIN : $_SERVER['HTTP_HOST'] ) : 'localhost';
+        $dev_url  = "{$protocol}://{$host}:5173";
 
         wp_enqueue_script( 'vite-client', "{$dev_url}/@vite/client", array(), null, false );
         wp_enqueue_script( 'theme-main', "{$dev_url}/{$theme_path}/assets/src/js/main.js", array(), null, true );
@@ -84,10 +90,11 @@ add_filter( 'script_loader_tag', function( string $tag, string $handle ): string
 /*******************************************/
 /*  RENDER HELPERS                         */
 /*******************************************/
-// Include avvolto in una closure: isola le variabili locali (niente leak di
-// $args nello scope del template incluso) e basename() previene path
-// traversal se il nome arrivasse mai da un valore non fidato.
 function render_theme_component( string $component_name, array $args = array() ): void {
+    // Chiusura statica: isola lo scope (solo $args è visibile dentro il
+    // template incluso, niente leak di variabili locali della funzione
+    // chiamante) e basename() impedisce path traversal se $component_name
+    // arrivasse mai da input non fidato.
     ( static function ( string $name, array $args ): void {
         include get_template_directory() . '/template/components/' . basename( $name ) . '.php';
     } )( $component_name, $args );
@@ -95,9 +102,10 @@ function render_theme_component( string $component_name, array $args = array() )
 
 function render_theme_block( string $block_name, array $args = array() ): void {
     ( static function ( string $name, array $args ): void {
-        $fields = isset( $args['id_block'] )
-            ? ( is_string( $args['id_block'] ) ? get_field( $args['id_block'] ) : $args['id_block'] )
-            : array();
+        $fields = isset( $args['id_block'] ) && is_array( $args['id_block'] )
+            ? $args['id_block']
+            : ( isset( $args['id_block'] ) ? get_field( $args['id_block'] ) : array() );
+        $options = $args['options'] ?? array();
         include get_template_directory() . '/template/blocks/' . basename( $name ) . '.php';
     } )( $block_name, $args );
 }
@@ -124,7 +132,10 @@ function print_pretty_array( mixed $variable ): void {
 
 // Un campo Link ACF vuoto (o l'intera riga di un repeater non compilata)
 // torna `false` invece di un array: normalizza per evitare warning/fatal
-// "array offset on bool/null" quando si accede a $link['url'] ecc.
+// "array offset on bool/null" quando si accede a $link['url'] ecc. Il
+// fallback a $field stesso copre il caso in cui il valore passato sia già
+// l'array del link (non annidato sotto una sub-key), e array_merge riempie
+// le chiavi mancanti se il link è compilato solo parzialmente.
 function get_acf_link( mixed $field, string $key = 'link' ): array {
     $empty = array( 'url' => '', 'title' => '', 'target' => '' );
 
@@ -138,9 +149,9 @@ function get_acf_link( mixed $field, string $key = 'link' ): array {
 
 // Costruisce la traccia breadcrumb (Home > ... > pagina corrente) per il
 // contesto corrente: termine di tassonomia (con i suoi antenati), pagina
-// (con le sue pagine antenate), singolo di un CPT (con l'archivio, se
-// presente), archivio, ricerca, 404. Ogni voce è ['title' => ..., 'url' =>
-// ...]; l'ultima voce ha url vuoto (pagina corrente).
+// (con le sue pagine antenate), singolo di un CPT (con l'archivio e/o la
+// prima tassonomia gerarchica assegnata), archivio, ricerca, 404. Ogni voce
+// è ['title' => ..., 'url' => '']; l'ultima voce ha url vuoto (pagina corrente).
 function theme_get_breadcrumb_items(): array {
     $items = array(
         array(
@@ -192,6 +203,23 @@ function theme_get_breadcrumb_items(): array {
                             'title' => $post_type_obj->labels->name,
                             'url'   => $archive_link,
                         );
+                    }
+                }
+
+                foreach ( get_object_taxonomies( $post->post_type, 'objects' ) as $taxonomy ) {
+                    if ( ! $taxonomy->hierarchical ) {
+                        continue;
+                    }
+                    $terms = get_the_terms( $post, $taxonomy->name );
+                    if ( $terms && ! is_wp_error( $terms ) ) {
+                        $link = get_term_link( $terms[0] );
+                        if ( ! is_wp_error( $link ) ) {
+                            $items[] = array(
+                                'title' => $terms[0]->name,
+                                'url'   => $link,
+                            );
+                        }
+                        break;
                     }
                 }
             }

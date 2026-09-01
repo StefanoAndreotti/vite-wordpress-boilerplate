@@ -22,3 +22,15 @@ $size-font-base-mobile: 14;
 
 $path-image: "../../../images/";
 $path-svg: "../../../images/svg/";
+
+//
+//  Fluid spacing (vedi fluid-space() in _functions.scss)
+//  Sovrascrivibili per progetto senza toccare _functions.scss, es. in style.scss:
+//    @use "variables" with ($fluid-space-min-ratio: 0.35, $fluid-space-viewport: 1600);
+//
+
+// Quota (0–1) del valore desktop usata come minimo mobile.
+$fluid-space-min-ratio: 0.5 !default;
+
+// Larghezza (px) alla quale il valore desktop è raggiunto.
+$fluid-space-viewport: 1440 !default;

@@ -2,8 +2,11 @@
 //  Functions
 //
 
+@use "sass:math";
+@use "variables" as *;
+
 @function strip-unit($value) {
-  @return $value / ($value * 0 + 1);
+  @return math.div($value, $value * 0 + 1);
 }
 
 @function rem($values) {
@@ -23,11 +26,11 @@
 
       @if $unit == 'px' {
         $px: append($px, $value);
-        $rem: append($rem,  ($val / $base-size + rem));
+        $rem: append($rem, (math.div($val, $base-size) + rem));
       }
 
       @if $unit == 'rem' {
-        $px: append($px,  ($val * $base-size + px));
+        $px: append($px, ($val * $base-size + px));
         $rem: append($rem, $value);
       }
     }
@@ -41,11 +44,34 @@
 
 }
 
-@function em($font-size,$line-height) {
+// fluid-space($target, $min-ratio, $viewport)
+// Genera clamp(min, vw, max) dove:
+//   min = $min-ratio del target (mobile) — default $fluid-space-min-ratio
+//   max = target (desktop, raggiunto a $viewport px) — default $fluid-space-viewport
+// I due default sono variabili sovrascrivibili per progetto (vedi _variables.scss);
+// i parametri restano disponibili anche per un override puntuale su una singola chiamata.
+// Usata da _spacing.scss per le classi utility .padd-*/.marg-*.
+//
+// Il target può essere negativo (margini negativi): min/max vengono riordinati
+// con math.min()/math.max() perché clamp() richiede min <= max — con un target
+// negativo il "minimo mobile" ($min-ratio * target) è il valore matematicamente
+// più grande (più vicino a 0), quindi va nella posizione di max, non di min.
+@function fluid-space($target, $min-ratio: $fluid-space-min-ratio, $viewport: $fluid-space-viewport) {
+  $target-px: strip-unit($target);
+  $min-px:    $target-px * $min-ratio;
+  $slope:     math.div($target-px, $viewport) * 100;
+
+  $lower: math.min($min-px, $target-px);
+  $upper: math.max($min-px, $target-px);
+
+  @return clamp(#{$lower}px, #{$slope}vw, #{$upper}px);
+}
+
+@function em($font-size, $line-height) {
 
   $font-size: strip-unit($font-size);
   $line-height: strip-unit($line-height);
 
-  @return (($line-height / $font-size) + em);
+  @return (math.div($line-height, $font-size) + em);
 
 }

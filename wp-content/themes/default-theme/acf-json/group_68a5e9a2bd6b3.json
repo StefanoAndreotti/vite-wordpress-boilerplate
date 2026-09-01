@@ -1,0 +1,201 @@
+{
+    "key": "group_68a5e9a2bd6b3",
+    "title": "Block - Options",
+    "fields": [
+        {
+            "key": "field_68a5e9a209c3e",
+            "label": "Opzioni",
+            "name": "block-options",
+            "aria-label": "",
+            "type": "group",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "block",
+            "sub_fields": [
+                {
+                    "key": "field_68a5e9d309c3f",
+                    "label": "Spaziature",
+                    "name": "",
+                    "aria-label": "",
+                    "type": "tab",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "placement": "left",
+                    "endpoint": 0
+                },
+                {
+                    "key": "field_68a5e9ec09c40",
+                    "label": "Padding (alto)",
+                    "name": "padd_top",
+                    "aria-label": "",
+                    "type": "range",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": 0,
+                    "min": "",
+                    "max": 300,
+                    "step": 5,
+                    "prepend": "",
+                    "append": "px"
+                },
+                {
+                    "key": "field_68a5ea1709c41",
+                    "label": "Padding (basso)",
+                    "name": "padd_bott",
+                    "aria-label": "",
+                    "type": "range",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": 0,
+                    "min": "",
+                    "max": 300,
+                    "step": 5,
+                    "prepend": "",
+                    "append": "px"
+                },
+                {
+                    "key": "field_68a5ea3009c42",
+                    "label": "Margine (alto)",
+                    "name": "margin_top",
+                    "aria-label": "",
+                    "type": "range",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": 0,
+                    "min": -300,
+                    "max": 300,
+                    "step": 5,
+                    "prepend": "",
+                    "append": "px"
+                },
+                {
+                    "key": "field_68a5ea5a09c43",
+                    "label": "Margine (basso)",
+                    "name": "margin_bott",
+                    "aria-label": "",
+                    "type": "range",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": 0,
+                    "min": -300,
+                    "max": 300,
+                    "step": 5,
+                    "prepend": "",
+                    "append": "px"
+                },
+                {
+                    "key": "field_6971f5e102c6c",
+                    "label": "ID & Classi",
+                    "name": "",
+                    "aria-label": "",
+                    "type": "tab",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "placement": "left",
+                    "endpoint": 0
+                },
+                {
+                    "key": "field_6971f60a02c6d",
+                    "label": "ID",
+                    "name": "id",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_6971f62402c6e",
+                    "label": "Classi (css)",
+                    "name": "classes",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": ""
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_status",
+                "operator": "==",
+                "value": "private"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "left",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Non usato direttamente: campi clonati (vedi field type \"clone\") dentro ogni blocco del builder per generare padding/margin/classi/ID via render_options().",
+    "show_in_rest": 0,
+    "modified": 1775633007
+}

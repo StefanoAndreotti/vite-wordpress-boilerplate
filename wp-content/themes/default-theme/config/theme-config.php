@@ -22,13 +22,7 @@ add_action( 'init', 'myprefix_unregister_tags' );
 /*******************************************/
 /*  ACF OPTIONS PAGES                      */
 /*******************************************/
-// Hook su 'acf/init' (non top-level): è il momento in cui ACF garantisce che
-// le sue funzioni siano disponibili, indipendentemente dall'ordine di
-// caricamento di plugin/tema.
-function theme_register_acf_options_pages(): void {
-    if ( ! function_exists( 'acf_add_options_page' ) ) {
-        return;
-    }
+if ( function_exists( 'acf_add_options_page' ) ) {
 
     acf_add_options_page( array(
         'page_title' => 'Campi globali',
@@ -43,28 +37,8 @@ function theme_register_acf_options_pages(): void {
         'menu_title'  => 'Google Maps - API',
         'parent_slug' => 'theme-general-settings',
     ) );
-}
-add_action( 'acf/init', 'theme_register_acf_options_pages' );
 
-
-/*******************************************/
-/*  ADMIN — SCHERMATA MODIFICA TERMINE     */
-/*  #edittag è max-width:800px di default, */
-/*  scomodo se dentro ci sono campi ACF a  */
-/*  builder di blocchi                     */
-/*******************************************/
-function theme_admin_edit_tag_full_width(): void {
-    $screen = get_current_screen();
-    if ( ! $screen || 'term' !== $screen->base ) {
-        return;
-    }
-    ?>
-    <style>
-        #edittag { max-width: 100%; }
-    </style>
-    <?php
 }
-add_action( 'admin_head', 'theme_admin_edit_tag_full_width' );
 
 
 /*******************************************/
@@ -114,6 +88,114 @@ function theme_next_posts_link_attributes(): string {
 }
 function theme_prev_posts_link_attributes(): string {
     return 'class="next-post"';
+}
+
+
+/*******************************************/
+/*  ADMIN — SCHERMATA MODIFICA TERMINE     */
+/*  #edittag è di default max-width:800px, */
+/*  scomodo con un builder a blocchi dentro */
+/*******************************************/
+function theme_admin_edit_tag_full_width(): void {
+    $screen = get_current_screen();
+    if ( ! $screen || 'term' !== $screen->base ) {
+        return;
+    }
+    ?>
+    <style>
+        #edittag { max-width: 100%; }
+    </style>
+    <?php
+}
+add_action( 'admin_head', 'theme_admin_edit_tag_full_width' );
+
+
+/*******************************************/
+/*  PAGE SLUG / TASSONOMIA → BODY CLASS    */
+/*******************************************/
+function add_page_slug_to_the_body( array $classes ): array {
+    global $post;
+
+    if ( isset( $post ) ) {
+        $classes[] = $post->post_type . '_' . $post->post_name;
+    }
+
+    if ( is_tax() || is_category() || is_tag() ) {
+        $term = get_queried_object();
+
+        if ( $term instanceof WP_Term ) {
+            $classes[] = 'tax_' . $term->taxonomy . '_' . $term->slug;
+            $classes[] = $term->parent > 0
+                ? 'tax_' . $term->taxonomy . '_child'
+                : 'tax_' . $term->taxonomy . '_parent';
+        }
+    }
+
+    return $classes;
+}
+add_filter( 'body_class', 'add_page_slug_to_the_body' );
+
+
+/*******************************************/
+/*  BLOCK OPTIONS (padding/margin/classi)  */
+/*  Consuma il campo clone "options" del   */
+/*  field group ACF "Block - Options"      */
+/*  agganciato a ogni blocco del builder.  */
+/*******************************************/
+function render_option_padding( array $options ): string {
+    $classes = '';
+
+    if ( ( $options['padd_top'] ?? 0 ) > 0 ) {
+        $classes .= ' padd-top-' . $options['padd_top'];
+    }
+
+    if ( ( $options['padd_bott'] ?? 0 ) > 0 ) {
+        $classes .= ' padd-bott-' . $options['padd_bott'];
+    }
+
+    return $classes;
+}
+
+function render_option_margin( array $options ): string {
+    $classes = '';
+
+    if ( isset( $options['margin_top'] ) && 0 !== (int) $options['margin_top'] ) {
+        $classes .= ' marg-top-' . $options['margin_top'];
+    }
+
+    if ( isset( $options['margin_bott'] ) && 0 !== (int) $options['margin_bott'] ) {
+        $classes .= ' marg-bott-' . $options['margin_bott'];
+    }
+
+    return $classes;
+}
+
+function render_option_container( array $options ): string {
+    if ( ! isset( $options['container_type'] ) ) {
+        return '';
+    }
+
+    return $options['container_type'] ? 'container' : 'container-fluid';
+}
+
+// Classi CSS custom + padding/margin per un blocco, a partire dal campo
+// clone "options" (field group "Block - Options"). Uso: `class="block<?= render_options($options) ?>"`.
+function render_options( array $options ): string {
+    $classes  = ! empty( $options['classes'] ) ? ' ' . $options['classes'] : '';
+    $classes .= render_option_padding( $options );
+    $classes .= render_option_margin( $options );
+
+    return $classes;
+}
+
+function render_container( array $options ): string {
+    return render_option_container( $options );
+}
+
+function render_bg_color( array $options ): string {
+    return ! empty( $options['container_color'] )
+        ? ' style="background-color:' . esc_attr( $options['container_color'] ) . ';"'
+        : '';
 }
 
 

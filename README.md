@@ -80,7 +80,7 @@ bun run dev
 
 Vite si avvia su `http://localhost:5173` e fa da proxy verso il tuo WordPress locale. Apri il sito tramite il dominio locale configurato in `.env` — non direttamente dalla porta 5173.
 
-> **HTTPS automatico (Laravel Valet):** se in `~/.config/valet/Certificates/` esiste un certificato per il tuo `LOCAL_DOMAIN` (es. `miosito.local.crt`/`.key`), il dev server si avvia in HTTPS su quel dominio invece che su `localhost`. Utile per testare cookie cross-site, consent mode GTM, form ecc. in un contesto realistico. Senza certificato, fa fallback su `http://localhost` come prima.
+> **HTTPS automatico (Laravel Valet):** se in `~/.config/valet/Certificates/` esiste un certificato per il tuo `LOCAL_DOMAIN` (es. `miosito.local.crt`/`.key`), il dev server si avvia in HTTPS su quel dominio invece che su `localhost`. Utile per testare cookie cross-site, consent mode GTM, form ecc. in un contesto realistico. Senza certificato, fa fallback su `http://localhost` come prima. Se usi HTTPS locale, definisci anche `LOCAL_DOMAIN` in `wp-config.php` (es. `define('LOCAL_DOMAIN', 'miosito.local');`) così PHP carica gli script Vite dallo stesso host/protocollo della pagina.
 
 ---
 
@@ -125,7 +125,7 @@ wp-content/themes/default-theme/
 │   ├── thumbnail-config.php  # Dimensioni immagini
 │   └── disableComment.php    # Disabilita i commenti
 ├── template/
-│   ├── tmpl-functions.php    # Helper Vite, render, SVG, Maps
+│   ├── tmpl-functions.php    # Helper Vite, render, SVG, Maps, breadcrumb, ACF link
 │   ├── blocks/               # Blocchi ACF
 │   └── components/           # Componenti riutilizzabili
 ├── pages/                    # Template di pagina WordPress
@@ -135,6 +135,35 @@ wp-content/themes/default-theme/
 ├── footer.php
 └── style.css
 ```
+
+---
+
+## Sistema "Block Options" (page builder)
+
+Ogni blocco del builder (`acf-json/group_652fdc070896c.json`, campo `blocks`) può includere il campo clone **"options"**, che clona il field group `Block - Options` (`acf-json/group_68a5e9a2bd6b3.json`): padding/margin top-bottom (range, in px) e classi/ID CSS custom. Per aggiungerlo a un nuovo blocco, nel field group del blocco aggiungi un campo `clone` → `group_68a5e9a2bd6b3`, `display: seamless`, nome `options` (vedi `group_652fdc4ad8efa.json` come esempio).
+
+Nel template PHP del blocco, `render_theme_block()` inietta automaticamente `$options` a partire da `$block['block-options']` (vedi `pages/page-template-block.php`). Helper disponibili in `config/theme-config.php`:
+
+```php
+<section class="my-block<?= render_options( $options ) ?>"<?= render_bg_color( $options ) ?>>
+```
+
+- `render_options($options)` — classi custom + `padd-top/bott-N` + `marg-top/bott-N`
+- `render_container($options)` — `container`/`container-fluid` (richiede il campo booleano `container_type`, non presente nel field group base: aggiungilo se serve)
+- `render_bg_color($options)` — attributo `style="background-color:...` (richiede il campo `container_color`, stesso discorso)
+
+Le classi `.padd-*`/`.marg-*` sono generate in `assets/src/sass/_spacing.scss` (step 5px, 0–300, più le negative `.marg-top--N` ecc. per i margini) via `fluid-space()` (clamp responsive, in `_functions.scss`).
+
+`fluid-space()` calcola `clamp(min, vw, max)` dove `min` è una quota (default 50%) del valore desktop e `max` è il valore stesso, raggiunto a una larghezza di riferimento (default 1440px). Questi due parametri sono sovrascrivibili per progetto senza toccare `_functions.scss`, tramite la configurazione del modulo Sass in `style.scss`:
+
+```scss
+@use "variables" with (
+  $fluid-space-min-ratio: 0.35, // mobile più compresso rispetto al desktop
+  $fluid-space-viewport: 1600   // il valore "desktop" si raggiunge solo da 1600px in su
+);
+```
+
+Per un override puntuale (una singola chiamata, non tutto il sistema di spacing), `fluid-space()` accetta gli stessi due parametri: `fluid-space(40px, 0.25, 1920)`.
 
 ---
 

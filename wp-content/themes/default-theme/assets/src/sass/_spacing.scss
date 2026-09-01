@@ -1,0 +1,86 @@
+//
+//  Spacing utilities
+//  Classi .padd-*/.marg-* consumate da render_options()/render_option_padding()/
+//  render_option_margin() (config/theme-config.php) a partire dal campo ACF
+//  clone "options" (field group "Block - Options").
+//
+
+@use "functions" as *;
+
+$spacing-max: 300;
+
+@for $i from 0 through $spacing-max {
+  @if $i % 5 == 0 {
+    $px: $i * 1px;
+
+    .padd-#{$i} {
+      padding: fluid-space($px);
+    }
+
+    .padd-top-#{$i} {
+      padding-top: fluid-space($px);
+    }
+
+    .padd-bott-#{$i} {
+      padding-bottom: fluid-space($px);
+    }
+
+    .padd-x-#{$i} {
+      padding-inline: fluid-space($px);
+    }
+
+    .padd-y-#{$i} {
+      padding-block: fluid-space($px);
+    }
+
+    .marg-#{$i} {
+      margin: fluid-space($px);
+    }
+
+    .marg-top-#{$i} {
+      margin-top: fluid-space($px);
+    }
+
+    .marg-bott-#{$i} {
+      margin-bottom: fluid-space($px);
+    }
+
+    .marg-x-#{$i} {
+      margin-inline: fluid-space($px);
+    }
+
+    .marg-y-#{$i} {
+      margin-block: fluid-space($px);
+    }
+  }
+}
+
+// Margini negativi (padding non può essere negativo in CSS, niente equivalente
+// per .padd-*). Nomi classe con doppio trattino per allinearsi alla concatenazione
+// PHP in render_option_margin(): 'marg-top-' . $options['margin_top'] con un
+// valore come -50 produce letteralmente "marg-top--50".
+@for $i from 5 through $spacing-max {
+  @if $i % 5 == 0 {
+    $px: $i * -1 * 1px;
+
+    .marg--#{$i} {
+      margin: fluid-space($px);
+    }
+
+    .marg-top--#{$i} {
+      margin-top: fluid-space($px);
+    }
+
+    .marg-bott--#{$i} {
+      margin-bottom: fluid-space($px);
+    }
+
+    .marg-x--#{$i} {
+      margin-inline: fluid-space($px);
+    }
+
+    .marg-y--#{$i} {
+      margin-block: fluid-space($px);
+    }
+  }
+}
