@@ -1,4 +1,4 @@
-<?php /*
+<?php
 // Register Custom Taxonomy
 function custom_taxonomy() {
 

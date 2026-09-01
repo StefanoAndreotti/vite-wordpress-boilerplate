@@ -22,7 +22,10 @@ add_action( 'init', 'myprefix_unregister_tags' );
 /*******************************************/
 /*  ACF OPTIONS PAGES                      */
 /*******************************************/
-if ( function_exists( 'acf_add_options_page' ) ) {
+function theme_register_acf_options_pages(): void {
+    if ( ! function_exists( 'acf_add_options_page' ) ) {
+        return;
+    }
 
     acf_add_options_page( array(
         'page_title' => 'Campi globali',
@@ -37,8 +40,8 @@ if ( function_exists( 'acf_add_options_page' ) ) {
         'menu_title'  => 'Google Maps - API',
         'parent_slug' => 'theme-general-settings',
     ) );
-
 }
+add_action( 'acf/init', 'theme_register_acf_options_pages' );
 
 
 /*******************************************/
